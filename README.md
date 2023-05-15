@@ -1,2 +1,2 @@
 # 4cast
-A MLP model to predict stock open prices using OHLC time series data
+A MLP model to forecast stock open prices using OHLC time series data
