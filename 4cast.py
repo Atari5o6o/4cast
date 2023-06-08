@@ -3,7 +3,7 @@ from get_all_tickers import get_tickers_filtered
 from yahoo_fin.stock_info import get_data
 
 
-#functiom to get formatted data for specific ticker
+# functiom to get formatted data for specific ticker
 def get_ml_formatted_data(ticker, start_date='01/01/2020', end_date='01/01/2022'):
     
     
