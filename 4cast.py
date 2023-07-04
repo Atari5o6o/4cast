@@ -116,3 +116,4 @@ for i in range(len(labels)):
 
 # STEP 6: Evaluate Algorithm
 logger.graph_statistics()
+# print(type(logger))
