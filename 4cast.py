@@ -1,6 +1,10 @@
 import numpy as np
-from get_all_tickers import get_tickers_filtered
 from yahoo_fin.stock_info import get_data
+from get_all_tickers import get_tickers_filtered
+from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+from trade_stat_logger.logger import SimpleLogger
 
 
 # functiom to get formatted data for specific ticker
@@ -66,10 +70,7 @@ data, labels, _,_ = get_ml_data_multiple_tickers(tickers, start_date='01/01/2020
 
 #training the model
 
-from sklearn.ensemble import MLPClassifier
-from sklearn.model_selection import train_test_split
-
-model = MLPClassifier(solver='lbfgs', hidden_layer_sizes=(8,8,8), max_iter=1000, activation='tanh', random_state=1)
+model = MLPClassifier(solver='lbfgs', hidden_layer_sizes=(8,8,8), max_iter=10000, activation='tanh', random_state=1)
 #lbfgs converges fast for small datasets
 #hidden layers are essentially the neurons between the input and output layers, in this case there are three layers with 8 neurons each
 #activations using tanh functuion prevents neuron deths, neuron deahs cause all outputs to be 0
@@ -81,5 +82,37 @@ model.fit(X_train, y_train)#fits the model to the training data
 predicted  = model.predict(X_test)#predicts the labels for the testing data
 
 #evaluating the model
+print(metrics.classification_report(y_test, predicted))
 print("Accuracy:", model.score(X_test, y_test))#prints the accuracy of the model
 
+
+model.fit(data, labels)
+
+# STEP 5: Develop trading algorithm
+# we could try to match each data point with the corresponding ticker
+# however, since we log buys and sells instantly it doesn't matter
+ticker = 'ANON'
+
+logger = SimpleLogger()
+
+data, labels, close_vals, open_vals = get_ml_data_multiple_tickers(tickers, start_date='01/10/2019', end_date='05/01/2020')
+
+def get_prediction_values(data):
+    # need to encapsulate 1D data in a list b/c sklearn models 
+    # don't take single input values
+    value = model.predict([data])[0]
+    certainty = np.amax(model.predict_proba([data])[0])
+    return value, certainty
+
+for i in range(len(labels)):
+    value, certainty = get_prediction_values(data[i])
+    if certainty > .95:
+        if value:
+            logger.log(security=ticker, share_price=close_vals[i], shares=100)
+            logger.log(security=ticker, share_price=open_vals[i], shares=-100)
+        else:
+            logger.log(security=ticker, share_price=close_vals[i], shares=-100)
+            logger.log(security=ticker, share_price=open_vals[i], shares=100)
+
+# STEP 6: Evaluate Algorithm
+logger.graph_statistics()
