@@ -18,5 +18,8 @@ This project focuses on predicting stock price movements based on historical OHL
 
 ## Installation
 
-1. Clone this repository:
+1. Clone this repository:<br>
+`git coone https://github.com/Atari5o6o/4cast.git`
+
+2. Install the necessary python packages
 
